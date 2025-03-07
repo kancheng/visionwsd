@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, jsonify
+from flask import Flask, render_template, request, url_for, jsonify, send_from_directory
 import os
 import cv2
 import uuid
@@ -19,10 +19,12 @@ os.makedirs(RESULT_FOLDER, exist_ok=True)
 model = YOLO("yolov8n-seg.pt")
 
 # 全域字典存放各工作進度與結果
-# 格式： jobs[job_id] = {"progress": int, "result_file": str, "file_type": "image" 或 "video"}
+# 格式： jobs[job_id] = {"progress": int, "result_file": str, "file_type": "image" 或 "video", "original_file": str}
 jobs = {}
 
 def process_image(job_id, file_path, filename):
+    # 儲存原始檔案資訊
+    jobs[job_id]['original_file'] = filename
     # 模擬部分進度更新
     jobs[job_id]['progress'] = 10
     results = model(file_path)
@@ -36,11 +38,12 @@ def process_image(job_id, file_path, filename):
     jobs[job_id]['file_type'] = "image"
 
 def process_video(job_id, file_path, filename):
+    # 儲存原始檔案資訊
+    jobs[job_id]['original_file'] = filename
     cap = cv2.VideoCapture(file_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     # 嘗試改用 avc1 編碼
     fourcc = cv2.VideoWriter_fourcc(*'avc1')
-    # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -107,9 +110,14 @@ def progress():
         return jsonify({
             "progress": jobs[job_id]['progress'],
             "result_file": jobs[job_id]['result_file'],
-            "file_type": jobs[job_id]['file_type']
+            "file_type": jobs[job_id]['file_type'],
+            "original_file": jobs[job_id].get('original_file')
         })
-    return jsonify({"progress": 0, "result_file": None, "file_type": None})
+    return jsonify({"progress": 0, "result_file": None, "file_type": None, "original_file": None})
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == "__main__":
     app.run(debug=True)

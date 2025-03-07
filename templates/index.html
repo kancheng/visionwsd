@@ -2,13 +2,35 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
+    <!-- 加入 meta viewport 保證響應式呈現 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YOLO 檢測與分割</title>
     <style>
-      /* 簡易進度條樣式 */
+      /* 基本樣式 */
+      body {
+          margin: 0;
+          padding: 20px;
+          font-family: Arial, sans-serif;
+          background-color: #f8f8f8;
+      }
+      .container {
+          max-width: 960px;
+          margin: 0 auto;
+          background-color: #fff;
+          padding: 20px;
+          box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      }
+      h1, h2, h3 {
+          text-align: center;
+      }
+
+      /* 進度條樣式 */
       #progressBar {
           width: 100%;
           background-color: #f3f3f3;
           border: 1px solid #ccc;
+          border-radius: 5px;
+          overflow: hidden;
       }
       #progressBarFill {
           width: 0%;
@@ -16,32 +38,70 @@
           background-color: #4caf50;
           text-align: center;
           color: white;
+          line-height: 20px;
+      }
+
+      /* 表單樣式 */
+      #uploadForm {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+      }
+      #uploadForm input[type="file"] {
+          margin-bottom: 10px;
+      }
+
+      /* 結果展示區：響應式布局 */
+      .result-group {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-around;
+          gap: 20px;
+      }
+      .result-group > div {
+          flex: 1 1 45%;
+          box-sizing: border-box;
+      }
+      .result-group img, .result-group video {
+          max-width: 100%;
+          height: auto;
+          display: block;
+          margin: 0 auto;
+      }
+      @media (max-width: 768px) {
+          .result-group > div {
+              flex: 1 1 100%;
+          }
       }
     </style>
 </head>
 <body>
-    <h1>YOLO 檢測與分割 Demo</h1>
-    <!-- 上傳區 -->
-    <div id="uploadSection">
-        <form id="uploadForm">
-            <input type="file" name="file" required>
-            <button type="submit">Upload</button>
-        </form>
-    </div>
-
-    <!-- 進度條區 -->
-    <div id="progressSection" style="display:none;">
-        <h2>處理進度</h2>
-        <div id="progressBar">
-            <div id="progressBarFill">0%</div>
+    <div class="container">
+        <h1>YOLO 檢測與分割 Demo</h1>
+        <!-- 上傳區 -->
+        <div id="uploadSection">
+            <form id="uploadForm">
+                <input type="file" name="file" required>
+                <button type="submit">Upload</button>
+            </form>
         </div>
-    </div>
 
-    <!-- 結果展示區 -->
-    <div id="resultSection" style="display:none;">
-        <h2>檢測與分割結果</h2>
-        <div id="resultContainer"></div>
-        <button onclick="location.reload()">重新上傳</button>
+        <!-- 進度條區 -->
+        <div id="progressSection" style="display:none;">
+            <h2>處理進度</h2>
+            <div id="progressBar">
+                <div id="progressBarFill">0%</div>
+            </div>
+        </div>
+
+        <!-- 結果展示區 -->
+        <div id="resultSection" style="display:none;">
+            <h2>檢測與分割結果</h2>
+            <div id="resultContainer"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="location.reload()">重新上傳</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -63,7 +123,7 @@
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
-            // 隱藏上傳區、顯示進度區
+            // 隱藏上傳區，顯示進度區
             document.getElementById('uploadSection').style.display = 'none';
             progressSection.style.display = 'block';
 
@@ -78,10 +138,14 @@
                     checkProgress();
                 } else if(data.error){
                     alert(data.error);
+                    document.getElementById('uploadSection').style.display = 'block';
+                    progressSection.style.display = 'none';
                 }
             })
             .catch(error => {
                 console.error("Upload error:", error);
+                document.getElementById('uploadSection').style.display = 'block';
+                progressSection.style.display = 'none';
             });
         });
 
@@ -102,13 +166,37 @@
         function showResult(data) {
             progressSection.style.display = 'none';
             resultSection.style.display = 'block';
+            // 原始檔案與結果檔案的 URL
+            const originalUrl = `/uploads/${data.original_file}`;
             const resultUrl = `/static/results/${data.result_file}`;
-            const resultVideoUrl = `/static/results/${data.result_file}`;
             if(data.file_type === 'video'){
-                resultContainer.innerHTML = `<video controls playsinline style="max-width:100%;">
-    <source src="${resultVideoUrl}" type="video/mp4"></video>`;
+                resultContainer.innerHTML = `
+                  <div class="result-group">
+                    <div>
+                      <h3>原始影片</h3>
+                      <video controls playsinline>
+                        <source src="${originalUrl}" type="video/mp4">
+                      </video>
+                    </div>
+                    <div>
+                      <h3>YOLO 處理後影片</h3>
+                      <video controls playsinline>
+                        <source src="${resultUrl}" type="video/mp4">
+                      </video>
+                    </div>
+                  </div>`;
             } else if(data.file_type === 'image'){
-                resultContainer.innerHTML = `<img src="${resultUrl}" alt="結果圖片" style="max-width:100%;">`;
+                resultContainer.innerHTML = `
+                  <div class="result-group">
+                    <div>
+                      <h3>原始圖片</h3>
+                      <img src="${originalUrl}" alt="原始圖片">
+                    </div>
+                    <div>
+                      <h3>YOLO 處理後圖片</h3>
+                      <img src="${resultUrl}" alt="結果圖片">
+                    </div>
+                  </div>`;
             } else {
                 resultContainer.innerHTML = "未知的檔案類型。";
             }
