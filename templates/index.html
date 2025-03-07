@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>YOLO 檢測與分割</title>
+    <style>
+      /* 簡易進度條樣式 */
+      #progressBar {
+          width: 100%;
+          background-color: #f3f3f3;
+          border: 1px solid #ccc;
+      }
+      #progressBarFill {
+          width: 0%;
+          height: 20px;
+          background-color: #4caf50;
+          text-align: center;
+          color: white;
+      }
+    </style>
+</head>
+<body>
+    <h1>YOLO 檢測與分割 Demo</h1>
+    <!-- 上傳區 -->
+    <div id="uploadSection">
+        <form id="uploadForm">
+            <input type="file" name="file" required>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+
+    <!-- 進度條區 -->
+    <div id="progressSection" style="display:none;">
+        <h2>處理進度</h2>
+        <div id="progressBar">
+            <div id="progressBarFill">0%</div>
+        </div>
+    </div>
+
+    <!-- 結果展示區 -->
+    <div id="resultSection" style="display:none;">
+        <h2>檢測與分割結果</h2>
+        <div id="resultContainer"></div>
+        <button onclick="location.reload()">重新上傳</button>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const progressSection = document.getElementById('progressSection');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const resultSection = document.getElementById('resultSection');
+        const resultContainer = document.getElementById('resultContainer');
+
+        let jobId = null;
+
+        uploadForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const fileInput = uploadForm.querySelector('input[name="file"]');
+            if (fileInput.files.length === 0) {
+                alert("請選擇檔案！");
+                return;
+            }
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            // 隱藏上傳區、顯示進度區
+            document.getElementById('uploadSection').style.display = 'none';
+            progressSection.style.display = 'block';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.job_id){
+                    jobId = data.job_id;
+                    checkProgress();
+                } else if(data.error){
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error("Upload error:", error);
+            });
+        });
+
+        function checkProgress() {
+            fetch(`/progress?job_id=${jobId}`)
+                .then(response => response.json())
+                .then(data => {
+                    progressBarFill.style.width = data.progress + '%';
+                    progressBarFill.innerText = data.progress + '%';
+                    if(data.progress < 100) {
+                        setTimeout(checkProgress, 500);
+                    } else {
+                        showResult(data);
+                    }
+                });
+        }
+
+        function showResult(data) {
+            progressSection.style.display = 'none';
+            resultSection.style.display = 'block';
+            const resultUrl = `/static/results/${data.result_file}`;
+            const resultVideoUrl = `/static/results/${data.result_file}`;
+            if(data.file_type === 'video'){
+                resultContainer.innerHTML = `<video controls playsinline style="max-width:100%;">
+    <source src="${resultVideoUrl}" type="video/mp4"></video>`;
+            } else if(data.file_type === 'image'){
+                resultContainer.innerHTML = `<img src="${resultUrl}" alt="結果圖片" style="max-width:100%;">`;
+            } else {
+                resultContainer.innerHTML = "未知的檔案類型。";
+            }
+        }
+    </script>
+</body>
+</html>
