@@ -1,11 +1,29 @@
-以下是一份 GitHub README 文件範例，並以 **VISION** 作為專案的英文縮寫，代表 **V**isual **I**nference: **S**egmentation and **O**bject **N**etwork。這個專案將支援多種影像任務（例如影像檢測與影像分割），並透過 Web 平台進行互動，初步內建 YOLO 模型，未來預期也會加入 UNet 等其他模型。
+# VISION: Visual Inference: Segmentation and Object Network
 
----
+VISION is a web-based project for image analysis that integrates state-of-the-art models for object detection and image segmentation. Initially, it leverages the YOLO model for detection and segmentation tasks, and future iterations will incorporate additional models such as UNet and more, offering a versatile platform for various computer vision applications.
 
-```markdown
-# VISIONWSD: Visual Inference: Segmentation and Object Network
+## Info.
 
-VISIONWSD is a web-based project for image analysis that integrates state-of-the-art models for object detection and image segmentation. Initially, it leverages the YOLO model for detection and segmentation tasks, and future iterations will incorporate additional models such as UNet and more, offering a versatile platform for various computer vision applications.
+**简体中文**  
+VISION 是一个基于网络的平台，利用先进的计算机视觉模型，如 YOLO 和 UNet，实现实时目标检测和图像分割。
+
+**繁體中文**  
+VISION 是一個基於網頁的平台，利用尖端的計算機視覺模型，如 YOLO 和 UNet，來實現即時目標檢測與影像分割。
+
+**English**  
+VISION is a web-based platform that leverages cutting-edge computer vision models, such as YOLO and UNet, to perform real-time object detection and image segmentation.
+
+**Deutsch (German)**  
+VISION ist eine webbasierte Plattform, die modernste Computer-Vision-Modelle wie YOLO und UNet nutzt, um in Echtzeit Objekterkennung und Bildsegmentierung durchzuführen.
+
+**Français (French)**  
+VISION est une plateforme web qui exploite des modèles de vision par ordinateur de pointe, tels que YOLO et UNet, pour réaliser la détection d'objets et la segmentation d'images en temps réel.
+
+**Nederlands (Dutch)**  
+VISION is een webgebaseerd platform dat geavanceerde computervisie-modellen, zoals YOLO en UNet, inzet voor realtime objectdetectie en beeldsegmentatie.
+
+**日本語 (Japanese)**  
+VISION は、YOLO や UNet などの最先端のコンピュータビジョンモデルを活用し、リアルタイムで物体検出および画像セグメンテーションを実現するウェブベースのプラットフォームです。
 
 ## Table of Contents
 
@@ -20,7 +38,7 @@ VISIONWSD is a web-based project for image analysis that integrates state-of-the
 
 ## Overview
 
-The **VISIONWSD** project is designed to provide a unified web interface for processing images and videos using cutting-edge computer vision models. Users can upload files to perform:
+The **VISION** project is designed to provide a unified web interface for processing images and videos using cutting-edge computer vision models. Users can upload files to perform:
 - **Image Detection:** Locate and classify objects within an image.
 - **Image Segmentation:** Delineate objects or regions in an image with precise masks.
 
